@@ -1,70 +1,76 @@
-function [ newflood_p,newflood_f ,baseflow,K] = newfloodevents( data,date_peaks ,s_e_date_q,dura)
-%floodfeature ¸ù¾İÍËË®ÇúÏßÓë»ùÁ÷ĞŞÕı³¡´ÎºéË®ÌØÕ÷
-%   dataÎªÔ­Ê¼Á÷Á¿¹ı³Ì£¬date_peaksÎªºéË®ÊÂ¼ş£¬newfloodÎªĞŞÕıºóµÄºéË®¹ı³Ì£¬eventsfeatureÎªĞŞÕıºóµÄºéË®ÌØÕ÷Öµ£¬°üº¬ºé·åºéÁ¿ÓëºéË®³ÖĞøÊ±¼ä
-%% ¼ÆËãÍËË®ÇúÏßµÄ²ÎÊı
-% Ëã·¨£º½«ËùÓĞÁ÷Á¿ĞòÁĞµÄºóÒ»Ê±¼ä¶ÎµÄÁ÷Á¿³ıÒÔÇ°Ò»ÌìµÄÁ÷Á¿£¬È¡¶ÔÓ¦ÖµÎª0.5¡ª0.96¼äµÄÎªÍËË®¹ı³ÌµÄÁ÷Á¿ÏûÍËÏµÊı£¬Çó¾ùÖµµÃµ½K
-flow_s=data(:,4);
-flow_datenum=datenum(data(:,1:3));
-flow_s_sort=sort(flow_s);
-%baseflow=mean(flow_s_sort(1:floor(length(flow_s)*0.05)));%¶¨Òå»ùÁ÷
-baseflow=quantile(s_e_date_q(:,4),0.1);%¶¨Òå»ùÁ÷
-baseflow(baseflow<=1)=1;
-%% remove old method
-% cg=flow_s(2:end)./flow_s(1:end-1);
-% cg(cg<0.5)=0;cg(cg>0.95)=0;
-% cg=cg(cg>0);
-% cg(isempty(cg))=0.94;
-% K=-1/log(mean(cg));
-%% Ó¦ÓÃÍËË®ÇúÏßÇĞ¸î¾¶Á÷
-%Î´È¥µô»ùÁ÷
+function [newflood_p, newflood_f, baseflow, K] = newfloodevents(data, date_peaks, s_e_date_q, dura)
+    %floodfeature æ ¹æ®é€€æ°´æ›²çº¿ä¸åŸºæµä¿®æ­£åœºæ¬¡æ´ªæ°´ç‰¹å¾
+    %   dataä¸ºåŸå§‹æµé‡è¿‡ç¨‹ï¼Œdate_peaksä¸ºæ´ªæ°´äº‹ä»¶ï¼Œnewfloodä¸ºä¿®æ­£åçš„æ´ªæ°´è¿‡ç¨‹ï¼Œeventsfeatureä¸ºä¿®æ­£åçš„æ´ªæ°´ç‰¹å¾å€¼ï¼ŒåŒ…å«æ´ªå³°æ´ªé‡ä¸æ´ªæ°´æŒç»­æ—¶é—´
+    %% è®¡ç®—é€€æ°´æ›²çº¿çš„å‚æ•°
+    % ç®—æ³•ï¼šå°†æ‰€æœ‰æµé‡åºåˆ—çš„åä¸€æ—¶é—´æ®µçš„æµé‡é™¤ä»¥å‰ä¸€å¤©çš„æµé‡ï¼Œå–å¯¹åº”å€¼ä¸º0.5â€”0.96é—´çš„ä¸ºé€€æ°´è¿‡ç¨‹çš„æµé‡æ¶ˆé€€ç³»æ•°ï¼Œæ±‚å‡å€¼å¾—åˆ°K
+    flow_s = data(:, 4);
+    flow_datenum = datenum(data(:, 1:3));
+    flow_s_sort = sort(flow_s);
+    %baseflow=mean(flow_s_sort(1:floor(length(flow_s)*0.05)));%å®šä¹‰åŸºæµ
+    baseflow = quantile(s_e_date_q(:, 4), 0.1); %å®šä¹‰åŸºæµ
+    baseflow(baseflow <= 1) = 1;
+    %% remove old method
+    % cg=flow_s(2:end)./flow_s(1:end-1);
+    % cg(cg<0.5)=0;cg(cg>0.95)=0;
+    % cg=cg(cg>0);
+    % cg(isempty(cg))=0.94;
+    % K=-1/log(mean(cg));
+    %% åº”ç”¨é€€æ°´æ›²çº¿åˆ‡å‰²å¾„æµ
+    %æœªå»æ‰åŸºæµ
 
-stardatenum=datenum(s_e_date_q(:,1:3));
-enddatenum=datenum(s_e_date_q(:,5:7));
-newflood_p=cell(size(date_peaks,1),1);%ºéË®¹ı³Ì
-newflood_f=zeros(size(date_peaks,1),3);%ºéË®ÌØÕ÷£¬ÈıÁĞ·Ö±ğÎªºé·å£¬ºéÁ¿£¬³ÖĞøÊ±¼ä
-for ii=1:size(date_peaks,1)
-    e_process=flow_s(find(flow_datenum==stardatenum(ii)):find(flow_datenum==enddatenum(ii)));%³¡´ÎºéË®¾¶Á÷¹ı³Ì
-    step=dura(ii)/2;
-    step(step<10)=10;step(step>30)=30;
-    T=(0:ceil(step))';
-    if e_process(1)<=baseflow&&e_process(end)<=baseflow
-        qguocheng_3=e_process;
-    elseif e_process(1)<=baseflow&&e_process(end)>baseflow
-        receflow=e_process(end)*exp(-T/K);%±¾³¡ºéË®ÍËË®ÇúÏß
-        qguocheng_3=[e_process;receflow(2:end)];%Ô­Ê¼ºéË®¹ı³ÌÓëÍËË®ÇúÏßÏà½Ó
-    elseif e_process(1)>baseflow&&e_process(end)<=baseflow
-        lastreceflow=e_process(1)*exp(-T/K);%ÉÏÒ»³¡ÍËË®ÇúÏß
-        lastreceflow_1=lastreceflow-baseflow;%ÍËË®ÇúÏßÓë»ùÁ÷µÄ²îÖµ
-        lastreceflow_1=lastreceflow_1(lastreceflow_1>0);%ÌáÈ¡´óÓÚ0µÄ²¿·Ö
-        if length(lastreceflow_1)>length(e_process)
-            lastreceflow_1=lastreceflow_1(1:length(e_process));
+    stardatenum = datenum(s_e_date_q(:, 1:3));
+    enddatenum = datenum(s_e_date_q(:, 5:7));
+    newflood_p = cell(size(date_peaks, 1), 1); %æ´ªæ°´è¿‡ç¨‹
+    newflood_f = zeros(size(date_peaks, 1), 3); %æ´ªæ°´ç‰¹å¾ï¼Œä¸‰åˆ—åˆ†åˆ«ä¸ºæ´ªå³°ï¼Œæ´ªé‡ï¼ŒæŒç»­æ—¶é—´
+
+    for ii = 1:size(date_peaks, 1)
+        e_process = flow_s(find(flow_datenum == stardatenum(ii)):find(flow_datenum == enddatenum(ii))); %åœºæ¬¡æ´ªæ°´å¾„æµè¿‡ç¨‹
+        step = dura(ii) / 2;
+        step(step < 10) = 10; step(step > 30) = 30;
+        T = (0:ceil(step))';
+
+        if e_process(1) <= baseflow && e_process(end) <= baseflow
+            qguocheng_3 = e_process;
+        elseif e_process(1) <= baseflow && e_process(end) > baseflow
+            receflow = e_process(end) * exp(-T / K); %æœ¬åœºæ´ªæ°´é€€æ°´æ›²çº¿
+            qguocheng_3 = [e_process; receflow(2:end)]; %åŸå§‹æ´ªæ°´è¿‡ç¨‹ä¸é€€æ°´æ›²çº¿ç›¸æ¥
+        elseif e_process(1) > baseflow && e_process(end) <= baseflow
+            lastreceflow = e_process(1) * exp(-T / K); %ä¸Šä¸€åœºé€€æ°´æ›²çº¿
+            lastreceflow_1 = lastreceflow - baseflow; %é€€æ°´æ›²çº¿ä¸åŸºæµçš„å·®å€¼
+            lastreceflow_1 = lastreceflow_1(lastreceflow_1 > 0); %æå–å¤§äº0çš„éƒ¨åˆ†
+
+            if length(lastreceflow_1) > length(e_process)
+                lastreceflow_1 = lastreceflow_1(1:length(e_process));
+            end
+
+            qguocheng_2 = e_process(1:length(lastreceflow_1)) - lastreceflow_1;
+            qguocheng_3 = [qguocheng_2; e_process(length(lastreceflow_1) + 1:end)]; %ä¿®æ­£åçš„æ´ªæ°´è¿‡ç¨‹
+
+        else
+            %     e_process(e_process<=baseflow)=baseflow;%å»æ‰
+            lastreceflow = e_process(1) * exp(-T / K); %ä¸Šä¸€åœºé€€æ°´æ›²çº¿
+            lastreceflow_1 = lastreceflow - baseflow; %é€€æ°´æ›²çº¿ä¸åŸºæµçš„å·®å€¼
+            lastreceflow_1 = lastreceflow_1(lastreceflow_1 > 0); %æå–å¤§äº0çš„éƒ¨åˆ†
+            receflow = e_process(end) * exp(-T / K); %æœ¬åœºæ´ªæ°´é€€æ°´æ›²çº¿
+            qguocheng_1 = [e_process; receflow(2:end)]; %åŸå§‹æ´ªæ°´è¿‡ç¨‹ä¸é€€æ°´æ›²çº¿ç›¸æ¥
+            qguocheng_1 = qguocheng_1(qguocheng_1 >= baseflow); %å‰”é™¤å°¾éƒ¨å°äºåŸºæµçš„éƒ¨åˆ†
+
+            if length(lastreceflow_1) > length(qguocheng_1)
+                lastreceflow_1 = lastreceflow_1(1:length(qguocheng_1));
+            end
+
+            qguocheng_2 = qguocheng_1(1:length(lastreceflow_1)) - lastreceflow_1;
+            qguocheng_3 = [qguocheng_2; qguocheng_1(length(lastreceflow_1) + 1:end)]; %ä¿®æ­£åçš„æ´ªæ°´è¿‡ç¨‹
         end
-        qguocheng_2=e_process(1:length(lastreceflow_1))-lastreceflow_1;
-        qguocheng_3=[qguocheng_2;e_process(length(lastreceflow_1)+1:end)];%ĞŞÕıºóµÄºéË®¹ı³Ì
-        
-    else
-        %     e_process(e_process<=baseflow)=baseflow;%È¥µô
-        lastreceflow=e_process(1)*exp(-T/K);%ÉÏÒ»³¡ÍËË®ÇúÏß
-        lastreceflow_1=lastreceflow-baseflow;%ÍËË®ÇúÏßÓë»ùÁ÷µÄ²îÖµ
-        lastreceflow_1=lastreceflow_1(lastreceflow_1>0);%ÌáÈ¡´óÓÚ0µÄ²¿·Ö
-        receflow=e_process(end)*exp(-T/K);%±¾³¡ºéË®ÍËË®ÇúÏß
-        qguocheng_1=[e_process;receflow(2:end)];%Ô­Ê¼ºéË®¹ı³ÌÓëÍËË®ÇúÏßÏà½Ó
-        qguocheng_1=qguocheng_1(qguocheng_1>=baseflow);%ÌŞ³ıÎ²²¿Ğ¡ÓÚ»ùÁ÷µÄ²¿·Ö
-        if length(lastreceflow_1)>length(qguocheng_1)
-            lastreceflow_1=lastreceflow_1(1:length(qguocheng_1));
-        end
-        qguocheng_2=qguocheng_1(1:length(lastreceflow_1))-lastreceflow_1;
-        qguocheng_3=[qguocheng_2;qguocheng_1(length(lastreceflow_1)+1:end)];%ĞŞÕıºóµÄºéË®¹ı³Ì
+
+        realstartime = stardatenum(ii, 1);
+        realendtime = stardatenum(ii, 1) + length(qguocheng_3) - 1;
+        span = (realstartime:realendtime)';
+        spandate = datevec(span);
+        floodprocess = [spandate(:, 1:3), qguocheng_3]; %æ´ªæ°´è¿‡ç¨‹æœªå‡åŸºæµ
+        newflood_f(ii, 1) = max(qguocheng_3 - baseflow);
+        newflood_f(ii, 2) = sum(qguocheng_3 - baseflow) * 24 * 3600/10^4;
+        newflood_p{ii, 1} = floodprocess;
+        newflood_f(ii, 3) = realendtime - realstartime + 1; %æ´ªæ°´ç‰¹å¾å€¼å‡å‡äº†åŸºæµ
+
     end
-    realstartime=stardatenum(ii,1);
-    realendtime=stardatenum(ii,1)+length(qguocheng_3)-1;
-    span=(realstartime:realendtime)';
-    spandate=datevec(span);
-    floodprocess=[spandate(:,1:3),qguocheng_3];%ºéË®¹ı³ÌÎ´¼õ»ùÁ÷
-    newflood_f(ii,1)=max(qguocheng_3-baseflow);
-    newflood_f(ii,2)=sum(qguocheng_3-baseflow)*24*3600/10^4;
-    newflood_p{ii,1}=floodprocess;
-    newflood_f(ii,3)=realendtime-realstartime+1;%ºéË®ÌØÕ÷Öµ¾ù¼õÁË»ùÁ÷
-    
-end
-

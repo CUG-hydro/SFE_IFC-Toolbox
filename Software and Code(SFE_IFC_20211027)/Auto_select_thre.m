@@ -1,32 +1,35 @@
-function [output_para,figuredata] = Auto_select_thre(flowdata,interval)
-%Auto_select_thre »ùÓÚAD¼ìÑéÄâºÏÓÅ¶È×Ô¶¯Ñ¡È¡×î¼ÑPOTãĞÖµ
-%   input flowdata  ÎªÁ÷Á¿Êı¾İ£¨ÄêÔÂÈÕÁ÷Á¿£©£¬intervalÎª¶ÀÁ¢ºé·åµÄ×îĞ¡ÅĞ±ğÊ±¼ä£¬
-%   output_paraÎªÊä³ö²ÎÊı£¨Ñ¡ÔñµÄãĞÖµ£¬AD¼ìÑéÖµÓë¶ÔÓ¦µÄpÖµ£¬ppy£©£¬figuredata²ÎÊıÖµËæãĞÖµµÄ±ä»¯
-flow_s_sort=sort(flowdata(:,4));
-f_threshold=flow_s_sort(floor(length(flowdata(:,4))*95/100));%ÒÔ95%·ÖÎ»Ñ¡Ôñ³õÊ¼ãĞÖµ
-[ peaks_datenum ] = selectpeaks( flowdata ,f_threshold,interval );
-peaks_serise=peaks_datenum(:,2);
-thre_can=sort(unique(peaks_serise));
-years=size(flowdata,1)/365;
-temp=length(thre_can);
-temp(temp<=25)=26;
-for num=1:temp-25
-    peaks_serise1=peaks_serise(peaks_serise>thre_can(num));
-    gpdist = fitdist((peaks_serise1-thre_can(num)),'gp');
-    [~,p,ad_sta,~] = adtest((peaks_serise1-thre_can(num)),'Distribution',gpdist);
-    p_value(num,1)=p;
-    ad_value(num,1)=ad_sta;
-    k_shape(num,1)=gpdist.k;
-    ratio(num,1)=length(peaks_serise1)/years;
-end
-index1_5=find(ratio>1.2&ratio<5); %determine PPY range
-thr_ad_ppy_p=[thre_can(index1_5),ad_value(index1_5),ratio(index1_5),p_value(index1_5)];
-[~,I]=min(thr_ad_ppy_p(:,2));
-if isempty(I)==1
-    output_para=[thre_can(1),ad_value(1),ratio(1),p_value(1)];
-else
-    output_para=thr_ad_ppy_p(I,:);
-end
-figuredata=thr_ad_ppy_p;
-end
+function [output_para, figuredata] = Auto_select_thre(flowdata, interval)
+    %Auto_select_thre ï¿½ï¿½ï¿½ï¿½ADï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å¶ï¿½ï¿½Ô¶ï¿½Ñ¡È¡ï¿½ï¿½ï¿½POTï¿½ï¿½Öµ
+    %   input flowdata  Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½intervalÎªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ¡ï¿½Ğ±ï¿½Ê±ï¿½ä£¬
+    %   output_paraÎªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ADï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½Ó¦ï¿½ï¿½pÖµï¿½ï¿½ppyï¿½ï¿½ï¿½ï¿½figuredataï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½Öµï¿½Ä±ä»¯
+    flow_s_sort = sort(flowdata(:, 4));
+    f_threshold = flow_s_sort(floor(length(flowdata(:, 4)) * 95/100)); %ï¿½ï¿½95 %ï¿½ï¿½Î»Ñ¡ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½Öµ
+    [peaks_datenum] = selectpeaks(flowdata, f_threshold, interval);
+    peaks_serise = peaks_datenum(:, 2);
+    thre_can = sort(unique(peaks_serise));
+    years = size(flowdata, 1) / 365;
+    temp = length(thre_can);
+    temp(temp <= 25) = 26;
 
+    for num = 1:temp - 25
+        peaks_serise1 = peaks_serise(peaks_serise > thre_can(num));
+        gpdist = fitdist((peaks_serise1 - thre_can(num)), 'gp');
+        [~, p, ad_sta, ~] = adtest((peaks_serise1 - thre_can(num)), 'Distribution', gpdist);
+        p_value(num, 1) = p;
+        ad_value(num, 1) = ad_sta;
+        k_shape(num, 1) = gpdist.k;
+        ratio(num, 1) = length(peaks_serise1) / years;
+    end
+
+    index1_5 = find(ratio > 1.2 & ratio < 5); %determine PPY range
+    thr_ad_ppy_p = [thre_can(index1_5), ad_value(index1_5), ratio(index1_5), p_value(index1_5)];
+    [~, I] = min(thr_ad_ppy_p(:, 2));
+
+    if isempty(I) == 1
+        output_para = [thre_can(1), ad_value(1), ratio(1), p_value(1)];
+    else
+        output_para = thr_ad_ppy_p(I, :);
+    end
+
+    figuredata = thr_ad_ppy_p;
+end

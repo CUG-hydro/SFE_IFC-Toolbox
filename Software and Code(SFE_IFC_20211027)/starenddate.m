@@ -1,124 +1,133 @@
-function [ s_e_date_q,dura,f_low] = starenddate( data,events,interval)
-%starenddate ³õ²½È·¶¨ºéË®ÊÂ¼şµÄÆğÊ¼ÖÕÖ¹Ê±¼ä
-%   dataÎªÓĞĞ§¾¶Á÷£¬Ç°ÈıÁĞÎªÊ±¼ä£¬ºóÒ»ÁĞÎªÁ÷Á¿£¬eventsÎªÊÂ¼ş£¬Í¬ËÄÁĞ,intervalÎªÊÂ¼ş¶ÀÁ¢ĞÔÅĞ¶ÏµÄ¼ä¸ôÊ±¼ä
-%   Ëã·¨Îª£¬Ñ°ÕÒºé·åÇ°ºónÌìµÍÓÚºé·åÒ»°ëµÄ×îĞ¡Öµµã£¬n°´ÕÕEPAµÄºéË®¶ÀÁ¢ĞÔÀ´ÅĞ¶Ï
-% 20191211ĞŞ¸Ä
+function [s_e_date_q, dura, f_low] = starenddate(data, events, interval)
+    %starenddate åˆæ­¥ç¡®å®šæ´ªæ°´äº‹ä»¶çš„èµ·å§‹ç»ˆæ­¢æ—¶é—´
+    %   dataä¸ºæœ‰æ•ˆå¾„æµï¼Œå‰ä¸‰åˆ—ä¸ºæ—¶é—´ï¼Œåä¸€åˆ—ä¸ºæµé‡ï¼Œeventsä¸ºäº‹ä»¶ï¼ŒåŒå››åˆ—,intervalä¸ºäº‹ä»¶ç‹¬ç«‹æ€§åˆ¤æ–­çš„é—´éš”æ—¶é—´
+    %   ç®—æ³•ä¸ºï¼Œå¯»æ‰¾æ´ªå³°å‰ånå¤©ä½äºæ´ªå³°ä¸€åŠçš„æœ€å°å€¼ç‚¹ï¼ŒnæŒ‰ç…§EPAçš„æ´ªæ°´ç‹¬ç«‹æ€§æ¥åˆ¤æ–­
+    % 20191211ä¿®æ”¹
 
-data1=data(:,4);
-data2=data(:,4);
-% for mm=1:1
-% data1=smoothdata(data1,'movmean',3);
-% end
+    data1 = data(:, 4);
+    data2 = data(:, 4);
+    % for mm=1:1
+    % data1=smoothdata(data1,'movmean',3);
+    % end
 
-qdata=data1;
-qdate=data(:,1:3);
-qdatenum=datenum(qdate);
-% peak=events(:,4);
-%  bpeakdatenum=datenum(events(:,1:3));
-flow_s_sort=sort(qdata);
-f_low=flow_s_sort(floor(length(qdata)*0.1));
-if f_low==0
-    f_low=0.1;
-end
-qdata(qdata<0.1)=0.1;
-%% ÇóÊÂ¼şµÄÆğÊ¼ÖÕÖ¹Ê±¼ä
-for ii=1:size(events,1)
-    interval1=interval;
-    interval2=interval;
-    if ii>1&&events(ii,6)-events(ii-1,4)<interval1
-        interval1=events(ii,6)-events(ii-1,4);
-    end 
-    sindex=find(qdatenum==events(ii,4));%ÕÒµÄÊ±¼äÔÚ¾¶Á÷ĞòÁĞµÄÎ»ÖÃ
-    ss=sindex-interval1-1;
-    for day=1:interval1 %´Óºé·åÍùÇ°±éÀú
-        
-        if ss<1
-            ss=1;
-            [guaidianq(ii,1),lca]=min(qdata(ss:sindex));
-            guaidiand(ii,1)=qdatenum(lca);
-            break
-            % ÌÈÈôÇ°15Ìì²»´æÔÚ¼ÙÉèµÄµã£¬ÔòÈ¡Ç°15ÌìÁ÷Á¿µÄ×îĞ¡Öµ
-        end
-        %             ´¦ÀíÊÂ¼şÇ°µÄÈ±²âÇé¿ö
-        if qdatenum(sindex-day)-qdatenum(sindex-day-1)>1
-            guaidianq(ii,1)=qdata(sindex-day);
-            guaidiand(ii,1)=qdatenum(sindex-day);
-            break
-        end
-        
-        
-        if (qdata(sindex-day)-qdata(sindex-day-1)<=0&&qdata(sindex-day)-qdata(sindex-day+1)<0)&&(qdata(sindex-day)<0.5*events(ii,2)||qdata(sindex-day)<=f_low)
-%             
-            guaidianq(ii,1)=qdata(sindex-day);
-            guaidiand(ii,1)=qdatenum(sindex-day);
-            break   %ÕÒºé·åÇ°15ÌìµÍÓÚ·åÖµ50%µÄ²¨¹È£¬Ìø³öÑ­»·
-        else
-            if day==interval1
-            guaidianq(ii,1)=min(qdata(sindex-interval1:sindex));
-            guaidiand(ii,1)=qdatenum(sindex+max(find(qdata(sindex-interval1:sindex)==min(qdata(sindex-interval1:sindex))))-interval1-1);    % ÌÈÈôÇ°15Ìì²»´æÔÚ¼ÙÉèµÄµã£¬ÔòÈ¡Ç°15ÌìÁ÷Á¿µÄ×îĞ¡Öµ
-            end
-        end
-        
+    qdata = data1;
+    qdate = data(:, 1:3);
+    qdatenum = datenum(qdate);
+    % peak=events(:,4);
+    %  bpeakdatenum=datenum(events(:,1:3));
+    flow_s_sort = sort(qdata);
+    f_low = flow_s_sort(floor(length(qdata) * 0.1));
+
+    if f_low == 0
+        f_low = 0.1;
     end
-    
-    eindex=find(qdatenum==events(ii,6));
-    ee=eindex+interval2;
-    for day=1:interval2
-        %´¦Àí×îºóÒ»¸öÊÂ¼ş
-        if ee>=length(qdata)
-            ee=length(qdata);
-            [guaidianq(ii,2),lca]=min(qdata(eindex:ee));
-            guaidiand(ii,2)=qdatenum(lca+eindex-1);
-            break
+
+    qdata(qdata < 0.1) = 0.1;
+    %% æ±‚äº‹ä»¶çš„èµ·å§‹ç»ˆæ­¢æ—¶é—´
+    for ii = 1:size(events, 1)
+        interval1 = interval;
+        interval2 = interval;
+
+        if ii > 1 && events(ii, 6) - events(ii - 1, 4) < interval1
+            interval1 = events(ii, 6) - events(ii - 1, 4);
         end
-        
-        %´¦Àí´æÔÚÈ±²âµÄÇé¿ö
-        if qdatenum(eindex+day)-qdatenum(eindex+day+1)<-1
-            guaidianq(ii,2)=qdata(eindex+day);
-            guaidiand(ii,2)=qdatenum(eindex+day);
-            break
-        end
-        
-        if (qdata(eindex+day)-qdata(eindex+day-1)<0&&qdata(eindex+day)-qdata(eindex+day+1)<=0)&&(qdata(eindex+day)<0.5*events(ii,2)||qdata(eindex+day)<=f_low)
-            
-            guaidianq(ii,2)=qdata(eindex+day);
-            guaidiand(ii,2)=qdatenum(eindex+day);
-            break
-        else
-            if day==interval2
-            guaidianq(ii,2)=min(qdata(eindex:eindex+interval2));
-            guaidiand(ii,2)=qdatenum(eindex+min(find(qdata(eindex:eindex+interval2)==min(qdata(eindex:eindex+interval2))))-1);
+
+        sindex = find(qdatenum == events(ii, 4)); %æ‰¾çš„æ—¶é—´åœ¨å¾„æµåºåˆ—çš„ä½ç½®
+        ss = sindex - interval1 - 1;
+
+        for day = 1:interval1 %ä»æ´ªå³°å¾€å‰éå†
+
+            if ss < 1
+                ss = 1;
+                [guaidianq(ii, 1), lca] = min(qdata(ss:sindex));
+                guaidiand(ii, 1) = qdatenum(lca);
+                break
+                % å€˜è‹¥å‰15å¤©ä¸å­˜åœ¨å‡è®¾çš„ç‚¹ï¼Œåˆ™å–å‰15å¤©æµé‡çš„æœ€å°å€¼
             end
+
+            %             å¤„ç†äº‹ä»¶å‰çš„ç¼ºæµ‹æƒ…å†µ
+            if qdatenum(sindex - day) - qdatenum(sindex - day - 1) > 1
+                guaidianq(ii, 1) = qdata(sindex - day);
+                guaidiand(ii, 1) = qdatenum(sindex - day);
+                break
+            end
+
+            if (qdata(sindex - day) - qdata(sindex - day - 1) <= 0 && qdata(sindex - day) - qdata(sindex - day + 1) < 0) && (qdata(sindex - day) < 0.5 * events(ii, 2) || qdata(sindex - day) <= f_low)
+                %
+                guaidianq(ii, 1) = qdata(sindex - day);
+                guaidiand(ii, 1) = qdatenum(sindex - day);
+                break %æ‰¾æ´ªå³°å‰15å¤©ä½äºå³°å€¼50 %çš„æ³¢è°·ï¼Œè·³å‡ºå¾ªç¯
+            else
+
+                if day == interval1
+                    guaidianq(ii, 1) = min(qdata(sindex - interval1:sindex));
+                    guaidiand(ii, 1) = qdatenum(sindex + max(find(qdata(sindex - interval1:sindex) == min(qdata(sindex - interval1:sindex)))) - interval1 - 1); % å€˜è‹¥å‰15å¤©ä¸å­˜åœ¨å‡è®¾çš„ç‚¹ï¼Œåˆ™å–å‰15å¤©æµé‡çš„æœ€å°å€¼
+                end
+
+            end
+
         end
-        
+
+        eindex = find(qdatenum == events(ii, 6));
+        ee = eindex + interval2;
+
+        for day = 1:interval2
+            %å¤„ç†æœ€åä¸€ä¸ªäº‹ä»¶
+            if ee >= length(qdata)
+                ee = length(qdata);
+                [guaidianq(ii, 2), lca] = min(qdata(eindex:ee));
+                guaidiand(ii, 2) = qdatenum(lca + eindex - 1);
+                break
+            end
+
+            %å¤„ç†å­˜åœ¨ç¼ºæµ‹çš„æƒ…å†µ
+            if qdatenum(eindex + day) - qdatenum(eindex + day + 1) <- 1
+                guaidianq(ii, 2) = qdata(eindex + day);
+                guaidiand(ii, 2) = qdatenum(eindex + day);
+                break
+            end
+
+            if (qdata(eindex + day) - qdata(eindex + day - 1) < 0 && qdata(eindex + day) - qdata(eindex + day + 1) <= 0) && (qdata(eindex + day) < 0.5 * events(ii, 2) || qdata(eindex + day) <= f_low)
+
+                guaidianq(ii, 2) = qdata(eindex + day);
+                guaidiand(ii, 2) = qdatenum(eindex + day);
+                break
+            else
+
+                if day == interval2
+                    guaidianq(ii, 2) = min(qdata(eindex:eindex + interval2));
+                    guaidiand(ii, 2) = qdatenum(eindex + min(find(qdata(eindex:eindex + interval2) == min(qdata(eindex:eindex + interval2)))) - 1);
+                end
+
+            end
+
+        end
+
     end
-    
-end
-%% Èıµã»¬¶¯Æ½¾ùºóÎ¢µ÷
-% for jj=1:size(events,1)
-%     sindex_c=find(qdatenum==guaidiand(jj,1));
-%     if sindex_c>1
-%     [value,loc_c]=min(data2(sindex_c-1:sindex_c+1));
-%     guaidiand(jj,1)=guaidiand(jj,1)-2+loc_c;
-%     guaidianq(jj,1)=value;
-%     end
-%     
-%     eindex_c=find(qdatenum==guaidiand(jj,2));
-%     if eindex_c<length(qdatenum)
-%     [value,loc_c]=min(data2(eindex_c-1:eindex_c+1));
-%     guaidiand(jj,2)=guaidiand(jj,2)-2+loc_c;
-%     guaidianq(jj,2)=value;
-%     end
-%     
-% end
-%% ½«ÊÂ¼ş¿ªÊ¼½áÊøµÄÊ±¼äÊä³ö
-duration=guaidiand(:,2)-guaidiand(:,1)+1;
-star_peak=events(:,4)-guaidiand(:,1)+1;
-faileventsimdex=find(star_peak==interval+1);
-dura=[duration,star_peak];
-stardate=datevec(guaidiand(:,1));
-enddate=datevec(guaidiand(:,2));
-s_e_date_q=[stardate(:,1:3),guaidianq(:,1),enddate(:,1:3),guaidianq(:,2)];
+
+    %% ä¸‰ç‚¹æ»‘åŠ¨å¹³å‡åå¾®è°ƒ
+    % for jj=1:size(events,1)
+    %     sindex_c=find(qdatenum==guaidiand(jj,1));
+    %     if sindex_c>1
+    %     [value,loc_c]=min(data2(sindex_c-1:sindex_c+1));
+    %     guaidiand(jj,1)=guaidiand(jj,1)-2+loc_c;
+    %     guaidianq(jj,1)=value;
+    %     end
+    %
+    %     eindex_c=find(qdatenum==guaidiand(jj,2));
+    %     if eindex_c<length(qdatenum)
+    %     [value,loc_c]=min(data2(eindex_c-1:eindex_c+1));
+    %     guaidiand(jj,2)=guaidiand(jj,2)-2+loc_c;
+    %     guaidianq(jj,2)=value;
+    %     end
+    % end
+    %% å°†äº‹ä»¶å¼€å§‹ç»“æŸçš„æ—¶é—´è¾“å‡º
+    duration = guaidiand(:, 2) - guaidiand(:, 1) + 1;
+    star_peak = events(:, 4) - guaidiand(:, 1) + 1;
+    faileventsimdex = find(star_peak == interval + 1);
+    dura = [duration, star_peak];
+    stardate = datevec(guaidiand(:, 1));
+    enddate = datevec(guaidiand(:, 2));
+    s_e_date_q = [stardate(:, 1:3), guaidianq(:, 1), enddate(:, 1:3), guaidianq(:, 2)];
 
 end
-

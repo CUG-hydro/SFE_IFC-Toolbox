@@ -1,21 +1,24 @@
 function [interval] = calculate_interval_sigal(data)
-%calculate_interval ¼ÆËãºé·å¶ÀÁ¢×îĞ¡¼ä¸ôÊ±¼ä
-%   ´Ë´¦ÏÔÊ¾ÏêÏ¸ËµÃ÷
-% Á½´ÎÈıµã»¬¶¯Æ½¾ù
-data1=data(:,4);
-for mm=1:3
-    data1=smoothdata(data1,'movmean',3);
-end
-flow_s_sort=sort(data1);
-f_threshold=flow_s_sort(floor(length(data1)*80/100));%ÒÔ75%·ÖÎ»Ñ¡ÔñãĞÖµ%80% 20200409¸Ä
-[~,loc,w,~]=findpeaks(data1,'MinPeakHeight',f_threshold,'Annotate','extents');
-interval(1)=ceil(1.3*median(w));
-if interval(1)<5
-    interval(1)=5;
-end
-temp=diff(loc);
-% temp(temp>quantile(temp,1-0.5*size(data,1)/(365*length(loc))))=0;
-% interval(1)=ceil(quantile(temp,0.50));
-interval(2)=ceil(quantile(w,0.85));
-end
+    %calculate_interval è®¡ç®—æ´ªå³°ç‹¬ç«‹æœ€å°é—´éš”æ—¶é—´
+    %   æ­¤å¤„æ˜¾ç¤ºè¯¦ç»†è¯´æ˜
+    % ä¸¤æ¬¡ä¸‰ç‚¹æ»‘åŠ¨å¹³å‡
+    data1 = data(:, 4);
 
+    for mm = 1:3
+        data1 = smoothdata(data1, 'movmean', 3);
+    end
+
+    flow_s_sort = sort(data1);
+    f_threshold = flow_s_sort(floor(length(data1) * 80/100)); %ä»¥75 %åˆ†ä½é€‰æ‹©é˜ˆå€¼ %80 % 20200409æ”¹
+    [~, loc, w, ~] = findpeaks(data1, 'MinPeakHeight', f_threshold, 'Annotate', 'extents');
+    interval(1) = ceil(1.3 * median(w));
+
+    if interval(1) < 5
+        interval(1) = 5;
+    end
+
+    temp = diff(loc);
+    % temp(temp>quantile(temp,1-0.5*size(data,1)/(365*length(loc))))=0;
+    % interval(1)=ceil(quantile(temp,0.50));
+    interval(2) = ceil(quantile(w, 0.85));
+end

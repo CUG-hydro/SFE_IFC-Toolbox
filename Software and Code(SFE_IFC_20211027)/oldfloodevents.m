@@ -1,40 +1,39 @@
-function [oldflood_p,oldflood_f,T] = oldfloodevents( data,starendtime,dura )
-%flood_events_plot »æÖÆ³¡´ÎºéË®¹ı³ÌÏß
-%   dataÇ°ÈıÁĞÎª¾¶Á÷ĞòÁĞµÄÄêÔÂÈÕ£¬µÚËÄÁĞÎªÁ÷Á¿£¬starendtimeÇ°ÈıÁĞÎª¿ªÊ¼Ê±¼ä£¬ºóÈıÁĞÎª½áÊøÊ±¼ä
-oldflood_p=cell(size(starendtime,1),1);%ºéË®¹ı³Ì
-oldflood_f=zeros(size(starendtime,1),3);%ºéË®ÌØÕ÷£¬ÈıÁĞ·Ö±ğÎªºé·å£¬ºéÁ¿£¬³ÖĞøÊ±¼ä
-for ii=1:size(starendtime,1)
-%     temp=ceil(dura(ii)/3);
-    flow_datenum=datenum(data(:,1:3));
-    star_datenum=datenum(starendtime(ii,1:3));
-    end_datenum=datenum(starendtime(ii,4:6));
-    star_index=find(flow_datenum==star_datenum);
-    end_index=find(flow_datenum==end_datenum);
-%     plot(flow_datenum(star_index-temp:end_index+temp),data(star_index-temp:end_index+temp,4),'LineWidth',2)
-    flooddura_t=datevec(flow_datenum(star_index:end_index));
-    oldflood_p{ii,1}=[flooddura_t(:,1:3),data(star_index:end_index,4)];
-    oldflood_f(ii,1)=max(data(star_index:end_index,4));
-    oldflood_f(ii,2)=sum(data(star_index:end_index,4))*24*3600/10^4;
-    oldflood_f(ii,3)=dura(ii,1);
+function [oldflood_p, oldflood_f, T] = oldfloodevents(data, starendtime, dura)
+    %flood_events_plot ç»˜åˆ¶åœºæ¬¡æ´ªæ°´è¿‡ç¨‹çº¿
+    %   dataå‰ä¸‰åˆ—ä¸ºå¾„æµåºåˆ—çš„å¹´æœˆæ—¥ï¼Œç¬¬å››åˆ—ä¸ºæµé‡ï¼Œstarendtimeå‰ä¸‰åˆ—ä¸ºå¼€å§‹æ—¶é—´ï¼Œåä¸‰åˆ—ä¸ºç»“æŸæ—¶é—´
+    oldflood_p = cell(size(starendtime, 1), 1); %æ´ªæ°´è¿‡ç¨‹
+    oldflood_f = zeros(size(starendtime, 1), 3); %æ´ªæ°´ç‰¹å¾ï¼Œä¸‰åˆ—åˆ†åˆ«ä¸ºæ´ªå³°ï¼Œæ´ªé‡ï¼ŒæŒç»­æ—¶é—´
 
-    
-    %% ÉèÖÃ×ø±êÖáÓë²Î¿¼Ïß
-%     ylim=get(gca,'Ylim'); % »ñÈ¡µ±Ç°Í¼ĞÎµÄ×İÖáµÄ·¶Î§
-%     hold on
-%     plot([flow_datenum(star_index),flow_datenum(star_index)],ylim,'m--','LineWidth',1.5); hold on
-%     plot([flow_datenum(end_index),flow_datenum(end_index)],ylim,'m--','LineWidth',1.5)
-%     dateaxis('x',6)
-%     title(datestr(star_datenum,26))
-%     print(gcf,'-r600','-dpng',[num2str([ii,starendtime(ii,1:3)]),'.png']);
-%     close
-% end
+    for ii = 1:size(starendtime, 1)
+        %     temp=ceil(dura(ii)/3);
+        flow_datenum = datenum(data(:, 1:3));
+        star_datenum = datenum(starendtime(ii, 1:3));
+        end_datenum = datenum(starendtime(ii, 4:6));
+        star_index = find(flow_datenum == star_datenum);
+        end_index = find(flow_datenum == end_datenum);
+        %     plot(flow_datenum(star_index-temp:end_index+temp),data(star_index-temp:end_index+temp,4),'LineWidth',2)
+        flooddura_t = datevec(flow_datenum(star_index:end_index));
+        oldflood_p{ii, 1} = [flooddura_t(:, 1:3), data(star_index:end_index, 4)];
+        oldflood_f(ii, 1) = max(data(star_index:end_index, 4));
+        oldflood_f(ii, 2) = sum(data(star_index:end_index, 4)) * 24 * 3600/10^4;
+        oldflood_f(ii, 3) = dura(ii, 1);
 
-end
-    Number=(1:size(oldflood_f))';
-    Stardate=datetime(starendtime(:,1:3));
-    Enddate=datetime(starendtime(:,4:6));
-    Peakvalue=oldflood_f(:,1);
-    Volume=oldflood_f(:,2);
-    Duration=oldflood_f(:,3);
-    T=table(Number,Stardate,Enddate,Peakvalue,Volume,Duration);
+        %% è®¾ç½®åæ ‡è½´ä¸å‚è€ƒçº¿
+        %     ylim=get(gca,'Ylim'); % è·å–å½“å‰å›¾å½¢çš„çºµè½´çš„èŒƒå›´
+        %     hold on
+        %     plot([flow_datenum(star_index),flow_datenum(star_index)],ylim,'m--','LineWidth',1.5); hold on
+        %     plot([flow_datenum(end_index),flow_datenum(end_index)],ylim,'m--','LineWidth',1.5)
+        %     dateaxis('x',6)
+        %     title(datestr(star_datenum,26))
+        %     print(gcf,'-r600','-dpng',[num2str([ii,starendtime(ii,1:3)]),'.png']);
+        %     close
+        % end
+    end
 
+    Number = (1:size(oldflood_f))';
+    Stardate = datetime(starendtime(:, 1:3));
+    Enddate = datetime(starendtime(:, 4:6));
+    Peakvalue = oldflood_f(:, 1);
+    Volume = oldflood_f(:, 2);
+    Duration = oldflood_f(:, 3);
+    T = table(Number, Stardate, Enddate, Peakvalue, Volume, Duration);
