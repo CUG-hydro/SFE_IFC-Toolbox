@@ -80,7 +80,6 @@ function [newflood_p, newflood_f, T2] = FloodCharacteristics(date_flow, s_e_date
                 qguocheng_2 = qguocheng_1(1:length(lastreceflow_1)) - lastreceflow_1;
                 qguocheng_3 = [qguocheng_2; qguocheng_1(length(lastreceflow_1) + 1:end)]; %修正后的洪水过程
             end
-
         end
 
         realstartime = stardatenum(ii, 1);
